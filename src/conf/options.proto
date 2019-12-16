@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+
+// All options
+message GestureRecognizierOptions {
+    // Uri of the broker
+    string broker_uri = 1;
+    string zipkin_uri = 2;
+    repeated uint32 group_ids = 3;
+
+}
