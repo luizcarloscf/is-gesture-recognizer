@@ -6,6 +6,7 @@ from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
 from is_msgs.image_pb2 import ObjectAnnotations
 
 from utils import load_options
+from model import Model
 
 
 def span_duration_ms(span):
@@ -29,11 +30,18 @@ def create_exporter(service_name, uri):
 
 
 def main():
-    service_name = 'GestureRecognizier'
-    log = Logger(name=service_name)
-    op = load_options()
-    re_topic = re.compile(r'SkeletonsGrouper.(\w+).Localization')
 
+    #name of the service
+    service_name = 'GestureRecognizier.Recognition'
+
+    #logging info
+    log = Logger(name=service_name)
+
+    #loading options
+    op = load_options()
+
+    #regex object to match the
+    re_topic = re.compile(r'SkeletonsGrouper.(\w+).Localization')
     channel = Channel(op.broker_uri)
     log.info('Connected to broker {}', op.broker_uri)
 
