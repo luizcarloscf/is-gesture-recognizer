@@ -89,34 +89,37 @@ def main():
         with tracer.span(name='unpack'):
             annotations = msg.unpack(ObjectAnnotations)
             skeletons = [Skeleton(obj) for obj in annotations.objects]
-            skl = skeletons[0]
-            skl_normalized = skl.normalize()
-            skl_vector = skl_normalized.vectorized()
+            if len(skeletons) > 0:
+                skl = skeletons[0]
+                skl_normalized = skl.normalize()
+                skl_vector = skl_normalized.vectorized()
 
         # preditic
         with tracer.span(name='detection') as _span:
-            pred, prob, uncertainty = model.predict(skl_vector)
-            detection_span = _span
+            if len(skeletons) > 0:
+                pred, prob, uncertainty = model.predict(skl_vector)
+                detection_span = _span
 
         # finish the tracer
         tracer.end_span()
 
         # update metrics values
-        prediction.set(pred)
-        probability.set(prob)
-        unc.set(uncertainty)
+        if len(skeletons) > 0:
+            prediction.set(pred)
+            probability.set(prob)
+            unc.set(uncertainty)
 
-        # logging usefull informations
-        info = {
-            'prediction': pred,
-            'probability': prob,
-            'uncertainty': uncertainty,
-            'took_ms': {
-                'detection': round(span_duration_ms(detection_span), 2),
-                'service': round(span_duration_ms(span), 2)
+            # logging usefull informations
+            info = {
+                'prediction': pred,
+                'probability': prob,
+                'uncertainty': uncertainty,
+                'took_ms': {
+                    'detection': round(span_duration_ms(detection_span), 2),
+                    'service': round(span_duration_ms(span), 2)
+                }
             }
-        }
-        log.info('{}', str(info).replace("'", '"'))
+            log.info('{}', str(info).replace("'", '"'))
 
 
 if __name__ == "__main__":
