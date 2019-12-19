@@ -1,6 +1,6 @@
 {
-    "broker_uri": "amqp://10.10.2.3:30000",
-    "zipkin_uri": "http://10.10.2.3:30200",
+    "broker_uri": "amqp://rabbitmq.default",
+    "zipkin_uri": "http://zipkin.default:9411",
     "group_ids": [
         0
     ]

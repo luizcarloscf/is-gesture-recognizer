@@ -20,4 +20,4 @@ COPY etc/conf/options.json .
 
 RUN pip3 install -r /requirements.txt
 
-# ENTRYPOINT ["python3", "/src/is_gesture_recognizier/main.py"]
+ENTRYPOINT ["python3", "/src/is_gesture_recognizier/main.py"]
