@@ -57,7 +57,7 @@ class GestureSpotting(nn.Module):
             "type": type,
             "dropout": 0
         }
-        stats = np.load("train_stats.npy")
+        stats = np.load("./src/is_gesture_recognizier/train_stats.npy")
         #Embedding layers
         self.bfc1 = bl.Linear(54, 32, **linear_args)
         self.bfc2 = bl.Linear(32, 32, **linear_args)

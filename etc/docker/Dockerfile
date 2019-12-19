@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.11.0-gpu-py3
+FROM tensorflow/tensorflow:1.15.0-gpu-py3
 
 RUN pip uninstall -y jupyter ipykernel                               \
     && rm -rf /notebooks                                                \ 
@@ -7,7 +7,7 @@ RUN pip uninstall -y jupyter ipykernel                               \
     && rm -f /tensorflow_gpu-1.11.0-cp35-cp35m-manylinux1_x86_64.whl
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git wget libsm6 libxext6 libxrender-dev 
+    libsm6 libxext6 libxrender-dev 
 
 
 WORKDIR /opt/is

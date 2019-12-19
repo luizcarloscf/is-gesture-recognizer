@@ -54,6 +54,11 @@ def main():
 
     # initialize the Model
     model = GestureSpotting()
+    log.info('Initialize the model')
+
+    # load the model
+    model.load("./src/is_gesture_recognizier/model_spotting3.pth")
+    log.info('Loaded the model')
 
     # begining the service
     while True:

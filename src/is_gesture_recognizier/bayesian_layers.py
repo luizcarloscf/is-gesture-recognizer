@@ -7,7 +7,7 @@ from torch.autograd import Variable
 from torch.distributions import Normal
 from torch.nn.utils.rnn import PackedSequence
 from enum import Enum
-from scipy.linalg import block_diag
+#from scipy.linalg import block_diag
 
 class ModelType(Enum):
     DET = 0
