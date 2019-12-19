@@ -12,7 +12,7 @@ import random
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-import torch.optim as optim
+#import torch.optim as optim
 #import matplotlib.pyplot as plt
 import utils
 import logging
@@ -23,9 +23,9 @@ import bayesian_layers as bl
 import random
 
 #from skeleton import *
-torch.manual_seed(30)
-np.random.seed(30)
-random.seed(30)
+# torch.manual_seed(30)
+# np.random.seed(30)
+# random.seed(30)
 
 
 class GestureSpotting(nn.Module):
