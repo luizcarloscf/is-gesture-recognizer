@@ -6,7 +6,7 @@ import sys
 
 def load_options():
     log = Logger(name='LoadingOptions')
-    op_file = sys.argv[1] if len(sys.argv) > 1 else 'etc/conf/options.json'
+    op_file = sys.argv[1] if len(sys.argv) > 1 else 'options.json'
     try:
         with open(op_file, 'r') as f:
             try:
