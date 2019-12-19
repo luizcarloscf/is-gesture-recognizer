@@ -6,22 +6,24 @@ from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
 from is_msgs.image_pb2 import ObjectAnnotations
 
 from utils import load_options
-from model import Model
+from spotting import GestureSpotting
+from skeleton import Skeleton
 
 
 def span_duration_ms(span):
+    """ Funtion to measure the time of a span in the Zipkin instrumentation
+    """
     dt = dp.parse(span.end_time) - dp.parse(span.start_time)
     return dt.total_seconds() * 1000.0
 
 
 def create_exporter(service_name, uri):
-
+    """ Funtion to create the exporter in the Zipkin instrumentation
+    """
     log = Logger(name="CreateExporter")
     zipkin_ok = re.match("http:\\/\\/([a-zA-Z0-9\\.]+)(:(\\d+))?", uri)
-
     if not zipkin_ok:
         log.critical("Invalid zipkin uri \"{}\", expected http://<hostname>:<port>", uri)
-
     exporter = ZipkinExporter(service_name=service_name,
                               host_name=zipkin_ok.group(1),
                               port=zipkin_ok.group(3),
@@ -31,44 +33,65 @@ def create_exporter(service_name, uri):
 
 def main():
 
-    #name of the service
+    # Defining our service
     service_name = 'GestureRecognizier.Recognition'
-
-    #logging info
     log = Logger(name=service_name)
 
-    #loading options
+    # Loading options
     op = load_options()
 
-    #regex object to match the
-    re_topic = re.compile(r'SkeletonsGrouper.(\w+).Localization')
+    # Conecting to the broker
     channel = Channel(op.broker_uri)
     log.info('Connected to broker {}', op.broker_uri)
 
+    # creating the Zipking exporter
     exporter = create_exporter(service_name=service_name, uri=op.zipkin_uri)
 
+    # Subcripting on desired topics
     subscription = Subscription(channel=channel, name=service_name)
-
     for group_id in list(op.group_ids):
         subscription.subscribe('SkeletonsGrouper.{}.Localization'.format(group_id))
 
+    # initialize the Model
+    model = GestureSpotting()
+
+    # begining the service
     while True:
 
+        # waiting for receive a message
         msg = channel.consume()
 
+        # initialize the Tracer
         tracer = Tracer(exporter, span_context=msg.extract_tracing())
         span = tracer.start_span(name='detection_and_info')
+        detection_span = None
 
+        # unpack the message
         with tracer.span(name='unpack'):
             annotations = msg.unpack(ObjectAnnotations)
-            skeletons = [obj for obj in annotations.objects]
+            skeletons = [Skeleton(obj) for obj in annotations.objects]
+            skl = skeletons[0]
+            skl_normalized = skl.normalize()
+            skl_vector = skl_normalized.vectorized()
 
+        # preditic
+        with tracer.span(name='detection') as _span:
+            pred, prob, uncertainty = model.predict(skl_vector)
+            detection_span = _span
+
+        # finish the tracer
         tracer.end_span()
 
+        # logging usefull informations
         info = {
-            'detections': len(skeletons),
+            'prediction': pred,
+            'probability': prob,
+            'uncertainty': uncertainty,
+            'took_ms': {
+                'detection': round(span_duration_ms(detection_span), 2),
+                'service': round(span_duration_ms(span), 2)
+            }
         }
-
         log.info('{}', str(info).replace("'", '"'))
 
 
