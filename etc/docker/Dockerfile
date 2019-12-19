@@ -4,7 +4,7 @@ RUN pip uninstall -y jupyter ipykernel                               \
     && rm -rf /notebooks                                                \ 
     && rm -f /run_jupyter.sh                                            \
     && rm -f /root/.jupyter/jupyter_notebook_config.py                  \
-    && rm -f /tensorflow_gpu-1.11.0-cp35-cp35m-manylinux1_x86_64.whl
+    && rm -f /tensorflow_gpu-1.15.0-cp35-cp35m-manylinux1_x86_64.whl
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 libxext6 libxrender-dev 

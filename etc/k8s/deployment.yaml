@@ -31,6 +31,15 @@ spec:
           command: ["python3"]
           args: ["src/is_gesture_recognizier/main.py", "/conf/options.json"]
           imagePullPolicy: Always
+          ports:
+            - name: web
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 30
           resources:
             limits:
               cpu: "1"
@@ -46,3 +55,34 @@ spec:
             items:
               - key: recognizier
                 path: options.json
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: is-gesture-recognizier
+  labels:
+    app: is-gesture-recognizier
+spec:
+  ports:
+    - name: web
+      port: 80
+      targetPort: web
+  selector:
+    app: is-gesture-recognizier
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: is-gesture-recognizier
+  labels:
+    app: is-gesture-recognizier
+spec:
+  selector:
+    matchLabels:
+      app: is-gesture-recognizier
+  endpoints:
+    - port: web
+      interval: 5s # scrape the endpoint every X seconds
+
