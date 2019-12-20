@@ -1,4 +1,5 @@
 import re
+import time
 import dateutil.parser as dp
 
 from prometheus_client import start_http_server, Gauge
@@ -62,17 +63,18 @@ def main():
     log.info('Loaded the model')
 
     # metrics for monitoring the system
-    prediction = Gauge("prediction", "Skeleton predict as started gesture")
-    probability = Gauge("probability", "Probability of the skeleton making gesture")
     unc = Gauge('uncertainty', "Uncertainty about the predict")
 
     # default values of the metrics
-    prediction.set(0)
-    probability.set(0)
+
     unc.set(0)
 
     # starting the server
     start_http_server(8000)
+
+    # list and time to take the median
+    buffer = list()
+    initial_time = time.time()
 
     # begining the service
     while True:
@@ -105,9 +107,13 @@ def main():
 
         # update metrics values
         if len(skeletons) > 0:
-            prediction.set(pred)
-            probability.set(prob)
-            unc.set(uncertainty)
+            if (time.time() - initial_time) > op.period and len(buffer) > 0:
+                unc.set(sum(buffer) / len(buffer))
+                buffer = []
+                initial_time = time.time()
+
+            else:
+                buffer.append(uncertainty)
 
             # logging usefull informations
             info = {

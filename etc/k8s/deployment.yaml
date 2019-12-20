@@ -11,7 +11,8 @@ data:
       "zipkin_uri": "http://zipkin.default:9411",
       "group_ids": [
         0
-      ]
+      ],
+      "period": 5
     }
 
 ---
