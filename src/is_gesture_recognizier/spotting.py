@@ -119,7 +119,7 @@ class GestureSpotting(nn.Module):
 
     def _data_transformation(self, skl, mc_samples=20):
         data = np.expand_dims(skl, 0)
-        data = (skl - self.mean) / self.std
+        #data = (skl - self.mean) / self.std
         #creating a batch with same data. It improves the performance of MC samples
         data = np.repeat(data, mc_samples, 0)
         data = torch.from_numpy(data).float().unsqueeze(1)
