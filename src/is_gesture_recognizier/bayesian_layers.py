@@ -7,7 +7,7 @@ from torch.autograd import Variable
 from torch.distributions import Normal
 from torch.nn.utils.rnn import PackedSequence
 from enum import Enum
-#from scipy.linalg import block_diag
+from scipy.linalg import block_diag
 
 class ModelType(Enum):
     DET = 0
@@ -62,6 +62,7 @@ class GaussianDistribution(object):
 
     #reparametrization trick
     def sample(self, store):
+        # prinprint(store)
         eps = torch.randn_like(self.mu)
         self._last_sample = self.mu + self.sigma * eps
         if store:               # log posterior  - log prior
@@ -165,7 +166,7 @@ class Parameters(object):
     @store_samples.setter
     def store_samples(self,store):
         if store is False: self.clear_samples()
-        self._store_samples= store
+        self._store_samples = store
 
     @property
     def sampling(self):
@@ -179,6 +180,7 @@ class Parameters(object):
     def weight(self):
         assert self._weight is not None
         if isinstance(self._weight, GaussianDistribution):
+            # print(self._sampling, self._store_samples)
             if self._sampling: return self._weight.sample(self._store_samples)
             else: return self._weight.mu
         elif  self._type.value in [2,3]: return self._weight, self._w_logvar
@@ -194,17 +196,17 @@ class Parameters(object):
         return self._bias
     
     def clear_samples(self):
-        if isinstance(self._weight,GaussianDistribution):
+        if isinstance(self._weight, GaussianDistribution):
             self._weight.clear_samples()
             self._bias.clear_samples()
     
     def get_kl(self):
         kl = 0
-        if isinstance(self._weight,GaussianDistribution):
+        if isinstance(self._weight, GaussianDistribution):
             kl += self._weight.kl_div()
             kl += self._bias.kl_div()
-        if kl == 0:
-            print(kl)
+        if kl == 0:return 1e-18
+            
         return kl
 
 
@@ -333,6 +335,7 @@ class Linear(BaseLayer):
                                       logstd2=logstd2, \
                                       pi=pi, \
                                       type=type)
+
         
         self.dropout = dropout
         self.register_layer_parameters(self._params)
@@ -341,7 +344,6 @@ class Linear(BaseLayer):
 
     #Do remember to clean samples.
     def forward(self, inputs):
-        
         if self._type == ModelType.BBB:
             weight = self._params.weight
             bias = self._params.bias
@@ -352,7 +354,7 @@ class Linear(BaseLayer):
             bias = self._params.bias
             layer = F.linear(inputs, weight, bias)
             if self.dropout==0.0 or self.dropout == 1.0: return layer
-            return F.dropout(layer,p=self.dropout, training=True)
+            return F.dropout(layer, p=self.dropout, training=True)
 
         
         elif self._type == ModelType.VAR_DROP_B_ADAP:
@@ -391,6 +393,7 @@ class Linear(BaseLayer):
             return B.view(size) + bias
 
         elif self._type == ModelType.VAR_DROP_A_ADAP:
+
             # Paper:
             # Kingma, Durk P., Tim Salimans, and Max Welling. 
             #     "Variational dropout and the local reparameterization trick." 
@@ -445,8 +448,8 @@ class LSTM(nn.Module):
 
         for layer in range(num_layers):
             layer_input_size = input_size if layer == 0 else hidden_size
-            self._dense_layers_input.append(Linear(layer_input_size,gate_size,mu = mu, logstd1=logstd1, logstd2=logstd2, pi=pi, type = type))
-            self._dense_layers_hidden.append(Linear(hidden_size,gate_size, mu = mu,  logstd1=logstd1,logstd2=logstd2,pi=pi, type = type))
+            self._dense_layers_input.append(Linear(layer_input_size,gate_size,mu = mu, logstd1=logstd1, logstd2=logstd2, pi=pi, dropout = dropout, type = type))
+            self._dense_layers_hidden.append(Linear(hidden_size,gate_size, mu = mu,  logstd1=logstd1,logstd2=logstd2,pi=pi, dropout = dropout, type = type))
 
         
     def _apply(self, fn):
