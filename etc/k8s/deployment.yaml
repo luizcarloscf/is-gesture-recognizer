@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: is-gesture-recognizier
+  name: is-gesture-recognizer
   namespace: default
 data:
   recognizier: |-
@@ -19,19 +19,21 @@ data:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: is-gesture-recognizier
+  name: is-gesture-recognizer
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: is-gesture-recognizier
+        app: is-gesture-recognizer
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: cheetara
       containers:
-        - name: is-gesture-recognizier
-          image: luizcarloscf/is-gesture-recognizier:0.0.1
+        - name: is-gesture-recognizer
+          image: luizcarloscf/is-gesture-recognizer:0.0.1
           command: ["python3"]
-          args: ["src/is_gesture_recognizier/main.py", "/conf/options.json"]
+          args: ["src/is_gesture_recognizer/main.py", "/conf/options.json"]
           imagePullPolicy: Always
           ports:
             - name: web
@@ -53,7 +55,7 @@ spec:
       volumes:
         - name: options
           configMap:
-            name: is-gesture-recognizier
+            name: is-gesture-recognizer
             items:
               - key: recognizier
                 path: options.json
@@ -62,28 +64,28 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: is-gesture-recognizier
+  name: is-gesture-recognizer
   labels:
-    app: is-gesture-recognizier
+    app: is-gesture-recognizer
 spec:
   ports:
     - name: web
       port: 80
       targetPort: web
   selector:
-    app: is-gesture-recognizier
+    app: is-gesture-recognizer
 
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: is-gesture-recognizier
+  name: is-gesture-recognizer
   labels:
-    app: is-gesture-recognizier
+    app: is-gesture-recognizer
 spec:
   selector:
     matchLabels:
-      app: is-gesture-recognizier
+      app: is-gesture-recognizer
   endpoints:
     - port: web
       interval: 5s # scrape the endpoint every X seconds

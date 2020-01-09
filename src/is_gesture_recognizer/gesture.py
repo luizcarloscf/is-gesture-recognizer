@@ -159,28 +159,28 @@ class GestureRecognizer(nn.Module):
         return pred, prob, uncertainty
 
 
-if __name__ == "__main__":
-    import time
-    model = GestureRecognizer()
-    model.load("model_gesture3_0_91.16.pth")
-    files = glob.glob("../samples/*3d.json")
-    unc = 0.0
-    total = 0.0
-    for file in files:
-        with open(file) as f:
-            data = json.load(f)
-            for i, localization in enumerate(data["localizations"]):
-                annotations = ObjectAnnotations(localization)
-                skeletons = [Skeleton(obj) for obj in annotations.objects]
-                for skl in skeletons:
-                    #you can insert here a method to filter the principal skeleton
-                    skl_normalized = skl.normalize()
-                    skl_vector = skl_normalized.vectorized()
-                    pred, prob, uncertainty = model.predict(skl_vector)
-                    # print(pred, prob,uncertainty)
-                    unc += uncertainty
-                    total += 1
-                    #time.sleep(0.5)
-                    break
-            print(pred, prob, uncertainty)
-    print("mean uncertainty = ", unc / total)
+# if __name__ == "__main__":
+#     import time
+#     model = GestureRecognizer()
+#     model.load("model_gesture3_0_91.16.pth")
+#     files = glob.glob("../samples/*3d.json")
+#     unc = 0.0
+#     total = 0.0
+#     for file in files:
+#         with open(file) as f:
+#             data = json.load(f)
+#             for i, localization in enumerate(data["localizations"]):
+#                 annotations = ObjectAnnotations(localization)
+#                 skeletons = [Skeleton(obj) for obj in annotations.objects]
+#                 for skl in skeletons:
+#                     #you can insert here a method to filter the principal skeleton
+#                     skl_normalized = skl.normalize()
+#                     skl_vector = skl_normalized.vectorized()
+#                     pred, prob, uncertainty = model.predict(skl_vector)
+#                     # print(pred, prob,uncertainty)
+#                     unc += uncertainty
+#                     total += 1
+#                     #time.sleep(0.5)
+#                     break
+#             print(pred, prob, uncertainty)
+#     print("mean uncertainty = ", unc / total)

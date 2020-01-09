@@ -8,7 +8,7 @@ from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
 from is_msgs.image_pb2 import ObjectAnnotations
 
 from utils import load_options
-from spotting import GestureSpotting
+from gesture import GestureRecognizer
 from skeleton import Skeleton
 
 
@@ -55,12 +55,11 @@ def main():
         subscription.subscribe('SkeletonsGrouper.{}.Localization'.format(group_id))
 
     # initialize the Model
-    model = GestureSpotting()
+    model = GestureRecognizer()
     log.info('Initialize the model')
 
     # load the model
-    model.load("./src/is_gesture_recognizier/model_spotting3.pth")
-    log.info('Loaded the model')
+    model.load("model_gesture3_0_91.16.pth")
 
     # metrics for monitoring the system
     unc = Gauge('uncertainty', "Uncertainty about the predict")
