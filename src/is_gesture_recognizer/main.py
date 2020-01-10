@@ -36,7 +36,7 @@ def create_exporter(service_name, uri):
 def main():
 
     # Defining our service
-    service_name = 'GestureRecognizier.Recognition'
+    service_name = 'GestureRecognizer.Recognition'
     log = Logger(name=service_name)
 
     # Loading options

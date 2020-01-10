@@ -1,6 +1,4 @@
-from collections import deque
 import numpy as np
-import cv2
 import csv
 import sys
 import os
@@ -12,12 +10,7 @@ import random
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from dataset import IfesDataset
 import torch.optim as optim
-#import matplotlib.pyplot as plt
-import utils
-import logging
-import threading
 from torch.optim.lr_scheduler import StepLR
 from torch.autograd import Variable
 import bayesian_layers as bl
@@ -34,7 +27,7 @@ class GestureRecognizer(nn.Module):
         super(GestureRecognizer, self).__init__()
         type = bl.ModelType.MC_DROP
 
-        self.window = 0
+        self.window = []
         self.previous = 1
         self.window_size = 3
         self.spotting = GestureSpotting()
@@ -48,6 +41,7 @@ class GestureRecognizer(nn.Module):
             "type": type,
             "dropout": dropout
         }
+
         rnn_args = {
             "mu": 0,
             "logstd1": logstd1,
@@ -56,6 +50,7 @@ class GestureRecognizer(nn.Module):
             "type": type,
             "dropout": dropout
         }
+
         last_linear_args = {
             "mu": 0,
             "logstd1": logstd1,
@@ -136,10 +131,12 @@ class GestureRecognizer(nn.Module):
         data = self._data_transformation(skeleton, mc_samples)
 
         spp_pred, spp_prob, spp_unc = self.spotting.predict(data)
+        if len(self.window) == self.window_size: del self.window[0]
+        self.window.append(spp_pred)
+        w = sum(self.window) / self.window_size
 
-        self.window += spp_pred - self.previous
-        w = self.window / self.window_size
         prev = self.previous
+
         self.previous = spp_pred
         if ((prev == 1 and w < 0.5) or (prev == 0 and w < 0.7)):
             self.hidden_state = None
@@ -154,33 +151,34 @@ class GestureRecognizer(nn.Module):
             probs = F.log_softmax(out, 1).exp().detach().numpy()
             uncertainty = self._calc_uncertainty(probs)
             mean = probs.mean(0)
-            pred = np.argmax(mean)
-            prob = mean.max() + 1
+            pred = np.argmax(mean) + 1
+            prob = mean.max()
         return pred, prob, uncertainty
 
 
-# if __name__ == "__main__":
-#     import time
-#     model = GestureRecognizer()
-#     model.load("model_gesture3_0_91.16.pth")
-#     files = glob.glob("../samples/*3d.json")
-#     unc = 0.0
-#     total = 0.0
-#     for file in files:
-#         with open(file) as f:
-#             data = json.load(f)
-#             for i, localization in enumerate(data["localizations"]):
-#                 annotations = ObjectAnnotations(localization)
-#                 skeletons = [Skeleton(obj) for obj in annotations.objects]
-#                 for skl in skeletons:
-#                     #you can insert here a method to filter the principal skeleton
-#                     skl_normalized = skl.normalize()
-#                     skl_vector = skl_normalized.vectorized()
-#                     pred, prob, uncertainty = model.predict(skl_vector)
-#                     # print(pred, prob,uncertainty)
-#                     unc += uncertainty
-#                     total += 1
-#                     #time.sleep(0.5)
-#                     break
-#             print(pred, prob, uncertainty)
-#     print("mean uncertainty = ", unc / total)
+if __name__ == "__main__":
+    import time
+    model = GestureRecognizer()
+    model.load("model_gesture3_0_91.16.pth")
+
+    # files = glob.glob("../samples/*3d.json")
+    # unc = 0.0
+    # total = 0.0
+    # for file in files:
+    #     with open(file) as f:
+    #         data = json.load(f)
+    #         for i, localization in enumerate(data["localizations"]):
+    #             annotations = ObjectAnnotations(localization)
+    #             skeletons = [Skeleton(obj) for obj in annotations.objects]
+    #             for skl in skeletons:
+    #                 #you can insert here a method to filter the principal skeleton
+    #                 skl_normalized = skl.normalize()
+    #                 skl_vector = skl_normalized.vectorized()
+    #                 pred, prob, uncertainty= model.predict(skl_vector)
+    #             # print(pred, prob,uncertainty)
+    #                 unc += uncertainty
+    #                 total+=1
+    #                 #time.sleep(0.5)
+    #                 break
+    #         print(pred, prob, uncertainty)
+    # print("mean uncertainty = ", unc/total)
