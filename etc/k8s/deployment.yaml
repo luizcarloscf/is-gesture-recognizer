@@ -27,11 +27,11 @@ spec:
       labels:
         app: is-gesture-recognizer
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: cheetara
       containers:
         - name: is-gesture-recognizer
           image: luizcarloscf/is-gesture-recognizer:0.0.1
+          #command: ["sleep"]
+          #args: ["30000000"]
           command: ["python3"]
           args: ["src/is_gesture_recognizer/main.py", "/conf/options.json"]
           imagePullPolicy: Always
