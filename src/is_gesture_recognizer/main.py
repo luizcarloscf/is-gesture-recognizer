@@ -55,25 +55,25 @@ def main():
         subscription.subscribe('SkeletonsGrouper.{}.Localization'.format(group_id))
 
     # initialize the Model
-    model = GestureRecognizer()
+    model = GestureRecognizer("model_gesture4_0_93.95.pth")
     log.info('Initialize the model')
 
-    # load the model
-    model.load("model_gesture3_0_91.16.pth")
-
     # metrics for monitoring the system
-    unc = Gauge('uncertainty', "Uncertainty about the predict")
+    unc = Gauge('uncertainty_total', "Uncertainty about predict")
+    std = Gauge('std_total', "standard deviation about predict")
 
-    # default values of the metrics
-
+    # default values of the metrics=
     unc.set(0)
+    std.set(0)
 
     # starting the server
     start_http_server(8000)
 
     # list and time to take the median
     buffer = list()
+    buffer_std = list()
     initial_time = time.time()
+    predict_flag = False
 
     # begining the service
     while True:
@@ -85,40 +85,72 @@ def main():
         tracer = Tracer(exporter, span_context=msg.extract_tracing())
         span = tracer.start_span(name='detection_and_info')
         detection_span = None
-
+        skeleton = None
         # unpack the message
+
+        count = 0
         with tracer.span(name='unpack'):
             annotations = msg.unpack(ObjectAnnotations)
-            skeletons = [Skeleton(obj) for obj in annotations.objects]
-            if len(skeletons) > 0:
-                skl = skeletons[0]
+            for i in range(len(annotations.objects)):
+                for j in range(len(annotations.objects[i].keypoints)):
+                    if annotations.objects[i].keypoints[j].position.x < 1 and annotations.objects[
+                            i].keypoints[j].position.x > -1:
+                        if annotations.objects[i].keypoints[
+                                j].position.y < 1 and annotations.objects[i].keypoints[
+                                    j].position.y > -1:
+                            count += 1
+
+                        if count == 8:
+                            skeleton = annotations.objects[i]
+                            break
+                count = 0
+
+                if skeleton is not None:
+                    break
+
+            if skeleton is not None:
+
+                skl = Skeleton(skeleton)
                 skl_normalized = skl.normalize()
                 skl_vector = skl_normalized.vectorized()
 
         # preditic
         with tracer.span(name='detection') as _span:
-            if len(skeletons) > 0:
-                pred, prob, uncertainty = model.predict(skl_vector)
+            if skeleton is not None:
+                pred, prob, uncertainty, std_dev = model.predict(skl_vector)
                 detection_span = _span
 
         # finish the tracer
         tracer.end_span()
 
         # update metrics values
-        if len(skeletons) > 0:
-            if (time.time() - initial_time) > op.period and len(buffer) > 0:
-                unc.set(sum(buffer) / len(buffer))
-                buffer = []
-                initial_time = time.time()
+        if skeleton is not None:
 
-            else:
+            if pred == 0 and predict_flag == False:
+                pass
+
+            elif pred != 0 and predict_flag == False:
+                predict_flag = True
                 buffer.append(uncertainty)
+                buffer_std.append(std_dev)
+
+            elif pred != 0 and predict_flag == True:
+                buffer.append(uncertainty)
+                buffer_std.append(std_dev)
+
+            elif pred == 0 and predict_flag == True:
+                predict_flag = False
+                unc.set(sum(buffer) / len(buffer))
+                std.set(sum(buffer_std) / len(buffer_std))
+                buffer = []
+                buffer_std = []
 
             # logging usefull informations
             info = {
                 'prediction': pred,
                 'probability': prob,
                 'uncertainty': uncertainty,
+                'standard deviation': std_dev,
                 'took_ms': {
                     'detection': round(span_duration_ms(detection_span), 2),
                     'service': round(span_duration_ms(span), 2)
