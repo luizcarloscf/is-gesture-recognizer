@@ -57,7 +57,6 @@ class GestureSpotting(nn.Module):
             "type": type,
             "dropout": 0
         }
-        stats = np.load("train_stats.npy")
         #Embedding layers
         self.bfc1 = bl.Linear(54, 32, **linear_args)
         self.bfc2 = bl.Linear(32, 32, **linear_args)
@@ -67,6 +66,7 @@ class GestureSpotting(nn.Module):
         #attributs
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.hidden_state = None
+        stats = np.load("train_stats.npy")
         self.mean, self.std = stats[0], stats[1] + 1e-18
 
         #model parameters
@@ -115,7 +115,8 @@ class GestureSpotting(nn.Module):
         else:
             mean = probs.mean(0)
             h = -(mean * np.log(mean)).sum(0)  #entropy
-        return h
+            s = probs.std(0).sum()
+        return h, s
 
     def _data_transformation(self, skl, mc_samples=20):
         data = np.expand_dims(skl, 0)
@@ -126,21 +127,21 @@ class GestureSpotting(nn.Module):
         data = data.to(self.device)
         return data
 
-    def predict(self, data):
+    def predict(self, skeleton, mc_samples):
         # mc_samples = 100
-        # data = self._data_transformation(skeleton,mc_samples)
+        data = self._data_transformation(skeleton, mc_samples)
         with torch.no_grad():
             out, hidden = self.forward(data, self.hidden_state)
             out = out.cpu()
             self.hidden_state = ([
-                h.data.mean(1, keepdim=True).repeat(1, data.shape[0], 1) for h in hidden
+                h.data.mean(1, keepdim=True).repeat(1, mc_samples, 1) for h in hidden
             ])
             probs = F.log_softmax(out, 1).exp().detach().numpy()
-            uncertainty = self._calc_uncertainty(probs)
+            uncertainty, std = self._calc_uncertainty(probs)
             mean = probs.mean(0)
             pred = np.argmax(mean)
             prob = mean.max()
-        return pred, prob, uncertainty
+        return pred, prob, uncertainty, std
 
 
 if __name__ == "__main__":
