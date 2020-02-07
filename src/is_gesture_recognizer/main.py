@@ -2,14 +2,13 @@ import re
 import time
 import dateutil.parser as dp
 
-from prometheus_client import start_http_server, Gauge
-from is_wire.core import Subscription, Message, Channel, Logger, Tracer, AsyncTransport
-from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
-from is_msgs.image_pb2 import ObjectAnnotations
-
+from skeleton import Skeleton
 from utils import load_options
 from gesture import GestureRecognizer
-from skeleton import Skeleton
+from is_msgs.image_pb2 import ObjectAnnotations
+from prometheus_client import start_http_server, Gauge
+from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
+from is_wire.core import Subscription, Message, Channel, Logger, Tracer, AsyncTransport
 
 
 def span_duration_ms(span):
@@ -60,18 +59,18 @@ def main():
 
     # metrics for monitoring the system
     unc = Gauge('uncertainty_total', "Uncertainty about predict")
-    std = Gauge('std_total', "standard deviation about predict")
+    #std = Gauge('std_total', "standard deviation about predict")
 
     # default values of the metrics=
     unc.set(0)
-    std.set(0)
+    #std.set(0)
 
     # starting the server
     start_http_server(8000)
 
     # list and time to take the median
     buffer = list()
-    buffer_std = list()
+    #buffer_std = list()
     predict_flag = False
 
     # begining the service
@@ -116,7 +115,7 @@ def main():
         # preditic
         with tracer.span(name='detection') as _span:
             if skeleton is not None:
-                pred, prob, uncertainty, std_dev = model.predict(skl_normalized)
+                pred, prob, uncertainty = model.predict(skl_normalized)
                 detection_span = _span
 
         # finish the tracer
@@ -131,25 +130,25 @@ def main():
             elif pred != 0 and predict_flag == False:
                 predict_flag = True
                 buffer.append(uncertainty)
-                buffer_std.append(std_dev)
+                #buffer_std.append(std_dev)
 
             elif pred != 0 and predict_flag == True:
                 buffer.append(uncertainty)
-                buffer_std.append(std_dev)
+                #buffer_std.append(std_dev)
 
             elif pred == 0 and predict_flag == True:
                 predict_flag = False
                 unc.set(sum(buffer) / len(buffer))
-                std.set(sum(buffer_std) / len(buffer_std))
+                #std.set(sum(buffer_std) / len(buffer_std))
                 buffer = []
-                buffer_std = []
+                #buffer_std = []
 
             # logging usefull informations
             info = {
                 'prediction': pred,
                 'probability': prob,
                 'uncertainty': uncertainty,
-                'standard deviation': std_dev,
+                'standard deviation': 0,
                 'took_ms': {
                     'detection': round(span_duration_ms(detection_span), 2),
                     'service': round(span_duration_ms(span), 2)
