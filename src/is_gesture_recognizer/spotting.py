@@ -66,8 +66,8 @@ class GestureSpotting(nn.Module):
         #attributs
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.hidden_state = None
-        stats = np.load("train_stats.npy")
-        self.mean, self.std = stats[0], stats[1] + 1e-18
+        #stats = np.load("train_stats.npy")
+        #self.mean, self.std = stats[0], stats[1]+1e-18
 
         #model parameters
         self.input_size = 32
@@ -94,7 +94,7 @@ class GestureSpotting(nn.Module):
         self.lstm = self.lstm.to(self.device)
         self.fc = self.fc.to(self.device)
 
-        self.load_state_dict(torch.load(path), strict=False)
+        self.load_state_dict(torch.load(path, map_location=self.device), strict=False)
         self.eval()
 
     def forward(self, x, hidden):
@@ -115,10 +115,10 @@ class GestureSpotting(nn.Module):
         else:
             mean = probs.mean(0)
             h = -(mean * np.log(mean)).sum(0)  #entropy
-            s = probs.std(0).sum()
-        return h, s
+        return h
 
     def _data_transformation(self, skl, mc_samples=20):
+        skl = skl.vectorized()
         data = np.expand_dims(skl, 0)
         # data = (skl-self.mean)/self.std
         #creating a batch with same data. It improves the performance of MC samples
@@ -137,11 +137,11 @@ class GestureSpotting(nn.Module):
                 h.data.mean(1, keepdim=True).repeat(1, mc_samples, 1) for h in hidden
             ])
             probs = F.log_softmax(out, 1).exp().detach().numpy()
-            uncertainty, std = self._calc_uncertainty(probs)
+            uncertainty = self._calc_uncertainty(probs)
             mean = probs.mean(0)
             pred = np.argmax(mean)
             prob = mean.max()
-        return pred, prob, uncertainty, std
+        return pred, prob, uncertainty
 
 
 if __name__ == "__main__":

@@ -55,7 +55,7 @@ def main():
         subscription.subscribe('SkeletonsGrouper.{}.Localization'.format(group_id))
 
     # initialize the Model
-    model = GestureRecognizer("model_gesture4_0_93.95.pth")
+    model = GestureRecognizer("model_gesture1_72.00.pth")
     log.info('Initialize the model')
 
     # metrics for monitoring the system
@@ -72,7 +72,6 @@ def main():
     # list and time to take the median
     buffer = list()
     buffer_std = list()
-    initial_time = time.time()
     predict_flag = False
 
     # begining the service
@@ -93,11 +92,11 @@ def main():
             annotations = msg.unpack(ObjectAnnotations)
             for i in range(len(annotations.objects)):
                 for j in range(len(annotations.objects[i].keypoints)):
-                    if annotations.objects[i].keypoints[j].position.x < 1 and annotations.objects[
-                            i].keypoints[j].position.x > -1:
+                    if annotations.objects[i].keypoints[j].position.x < 0.3 and annotations.objects[
+                            i].keypoints[j].position.x > -0.3:
                         if annotations.objects[i].keypoints[
-                                j].position.y < 1 and annotations.objects[i].keypoints[
-                                    j].position.y > -1:
+                                j].position.y < 0.3 and annotations.objects[i].keypoints[
+                                    j].position.y > -0.3:
                             count += 1
 
                         if count == 8:
@@ -112,12 +111,12 @@ def main():
 
                 skl = Skeleton(skeleton)
                 skl_normalized = skl.normalize()
-                skl_vector = skl_normalized.vectorized()
+                #skl_vector = skl_normalized.vectorized()
 
         # preditic
         with tracer.span(name='detection') as _span:
             if skeleton is not None:
-                pred, prob, uncertainty, std_dev = model.predict(skl_vector)
+                pred, prob, uncertainty, std_dev = model.predict(skl_normalized)
                 detection_span = _span
 
         # finish the tracer

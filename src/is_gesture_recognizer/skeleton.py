@@ -65,6 +65,9 @@ class Joint:
     def __sub__(self, joint):
         return np.array([self.x - joint.x, self.y - joint.y, self.z - joint.z])
 
+    def __add__(self, joint):
+        return np.array([self.x + joint.x, self.y + joint.y, self.z + joint.z])
+
     def get3DPoint(self):
         return np.array([self.x, self.y, self.z])
 
@@ -96,6 +99,16 @@ class Skeleton:
                     vec[s:s + 3] = [j.x, j.y, j.z]
         return vec
 
+    def vectorize_reduced(self):
+        vec = np.ones((21)) * (-1)
+        for i, k in enumerate([3, 4, 5, 6, 7, 8, 9]):
+            for key in self.joints.keys():
+                j = self.joints[key]
+                if j.id == k:
+                    s = i * 3
+                    vec[s:s + 3] = [j.x, j.y, j.z]
+        return vec
+
     def __str__(self):
         string = "\nSkeleton id: {}".format(self.id)
         for key in self.joints.keys():
@@ -105,14 +118,53 @@ class Skeleton:
     def GetJoint(self, id):
         return self.joints[id] if id in self.joints.keys() else Joint()
 
+    def flip(self):
+        flip_keys = {
+            0: 0,
+            1: 1,
+            2: 2,
+            3: 3,
+            7: 4,
+            8: 5,
+            9: 6,
+            4: 7,
+            5: 8,
+            6: 9,
+            13: 10,
+            14: 11,
+            15: 12,
+            10: 13,
+            11: 14,
+            12: 15,
+            17: 16,
+            16: 17,
+            19: 18,
+            18: 19,
+            20: 20
+        }
+
+        skl = Skeleton()
+        skl.id = self.id
+        skl.score = self.score
+        for key in self.joints.keys():
+            skl.joints[flip_keys[key]] = self.joints[key]
+
+        return skl
+
     def normalize(self):
-        right_hip = self.GetJoint(10)
+        rh = self.GetJoint(10)
+        ls = self.GetJoint(7)
+        mean = (rh + ls) / 2
+        center = Joint()
+        center.x = mean[0]
+        center.y = mean[1]
+        center.z = mean[2]
         skl = Skeleton()
         skl.id = self.id
         skl.score = self.score
 
         for key in self.joints.keys():
-            point = self.joints[key] - right_hip
+            point = self.joints[key] - center
             joint = Joint()
             joint.id = self.joints[key].id
             joint.score = self.joints[key].score
@@ -141,19 +193,23 @@ def update_buffer(skeletons, buffer, window_size):
 
 
 def save_skeletons():
-    json_files = glob.glob("/home/cabrunco/ifes-2018-10-19/*3d.json")
+    json_files = glob.glob("/public/datasets/ufes-2020-01-23/*3d.json")
+    # json_files = glob.glob("/public/datasets/ifes-2018-10-19/*3d.json")
+
     # size = len(json_files)
     # test_files = json_files[int(size*0.8):]
     # json_files = json_files[:int(size*0.8)]
-    save(json_files, "train")
+    save(json_files)
     #save(test_files,"test")
 
 
-def save(files, file_name="dataset"):
+def save(files, file_name="ufes_dataset"):
+    print(len(files))
     dataset = []
+    dataset_flip = []
     for src in files:
         name = src.split("/")[-1].split("_")[0]
-        spots = glob.glob("/home/cabrunco/ifes-2018-10-19/{}_spots.json".format(name))[0]
+        spots = glob.glob("/public/datasets/ufes-2020-01-23/{}_spots.json".format(name))[0]
         with open(src) as f:
             data = json.load(f)
         with open(spots) as f:
@@ -171,9 +227,11 @@ def save(files, file_name="dataset"):
             for skl in skeletons:
                 skl_normalized = skl.normalize()
                 dataset.append(
-                    np.append(np.array([labels[i]]), skl_normalized.vectorized(), axis=0))
+                    np.append(np.array([labels[i]]), skl_normalized.vectorize_reduced(), axis=0))
+                # skl_flip_normalized = skl.flip().normalize()
+                # dataset_flip.append(np.append(np.array([labels[i]]),skl_flip_normalized.vectorize_reduced(),axis=0))
                 break
-    np.save(file_name, np.array(dataset))
+    np.save(file_name, np.array(dataset + dataset_flip))
 
 
 #Try to recognize the wave gesture
