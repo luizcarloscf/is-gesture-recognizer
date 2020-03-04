@@ -8,5 +8,6 @@ message GestureRecognizierOptions {
     string zipkin_uri = 2;
     repeated uint32 group_ids = 3;
     double period = 4;
+    double region = 5;
 
 }

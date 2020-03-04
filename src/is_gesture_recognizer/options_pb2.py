@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\roptions.proto\"f\n\x19GestureRecognizierOptions\x12\x12\n\nbroker_uri\x18\x01 \x01(\t\x12\x12\n\nzipkin_uri\x18\x02 \x01(\t\x12\x11\n\tgroup_ids\x18\x03 \x03(\r\x12\x0e\n\x06period\x18\x04 \x01(\x01\x62\x06proto3')
+  serialized_pb=_b('\n\roptions.proto\"v\n\x19GestureRecognizierOptions\x12\x12\n\nbroker_uri\x18\x01 \x01(\t\x12\x12\n\nzipkin_uri\x18\x02 \x01(\t\x12\x11\n\tgroup_ids\x18\x03 \x03(\r\x12\x0e\n\x06period\x18\x04 \x01(\x01\x12\x0e\n\x06region\x18\x05 \x01(\x01\x62\x06proto3')
 )
 
 
@@ -60,6 +60,13 @@ _GESTURERECOGNIZIEROPTIONS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='region', full_name='GestureRecognizierOptions.region', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -73,7 +80,7 @@ _GESTURERECOGNIZIEROPTIONS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=17,
-  serialized_end=119,
+  serialized_end=135,
 )
 
 DESCRIPTOR.message_types_by_name['GestureRecognizierOptions'] = _GESTURERECOGNIZIEROPTIONS

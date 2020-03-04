@@ -91,11 +91,12 @@ def main():
             annotations = msg.unpack(ObjectAnnotations)
             for i in range(len(annotations.objects)):
                 for j in range(len(annotations.objects[i].keypoints)):
-                    if annotations.objects[i].keypoints[j].position.x < 0.3 and annotations.objects[
-                            i].keypoints[j].position.x > -0.3:
+                    if annotations.objects[i].keypoints[
+                            j].position.x < op.region and annotations.objects[i].keypoints[
+                                j].position.x > -op.region:
                         if annotations.objects[i].keypoints[
-                                j].position.y < 0.3 and annotations.objects[i].keypoints[
-                                    j].position.y > -0.3:
+                                j].position.y < op.region and annotations.objects[i].keypoints[
+                                    j].position.y > -op.region:
                             count += 1
 
                         if count == 8:

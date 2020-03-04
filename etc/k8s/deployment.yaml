@@ -12,7 +12,8 @@ data:
       "group_ids": [
         0
       ],
-      "period": 5
+      "period": 5,
+      "region": 1
     }
 
 ---
@@ -27,9 +28,11 @@ spec:
       labels:
         app: is-gesture-recognizer
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: zeus
       containers:
         - name: is-gesture-recognizer
-          image: luizcarloscf/is-gesture-recognizer:0.0.1
+          image: luizcarloscf/is-gesture-recognizer:0.0.2
           #command: ["sleep"]
           #args: ["30000000"]
           command: ["python3"]
@@ -47,7 +50,7 @@ spec:
           resources:
             limits:
               cpu: "1"
-              memory: 2048Mi
+              memory: 4096Mi
               nvidia.com/gpu: 1
           volumeMounts:
             - name: options
