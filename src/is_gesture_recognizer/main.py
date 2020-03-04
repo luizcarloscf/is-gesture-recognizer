@@ -73,6 +73,8 @@ def main():
     #buffer_std = list()
     predict_flag = False
 
+    count_gesture = 0
+
     # begining the service
     while True:
 
@@ -138,11 +140,18 @@ def main():
                 #buffer_std.append(std_dev)
 
             elif pred == 0 and predict_flag == True:
+
+                count_gesture += 1
+
                 predict_flag = False
-                unc.set(sum(buffer) / len(buffer))
-                #std.set(sum(buffer_std) / len(buffer_std))
-                buffer = []
-                #buffer_std = []
+
+                if count_gesture >= op.count_gesture:
+
+                    unc.set(sum(buffer) / len(buffer))
+                    #std.set(sum(buffer_std) / len(buffer_std))
+                    buffer = []
+                    count_gesture = 0
+                    #buffer_std = []
 
             # logging usefull informations
             info = {
