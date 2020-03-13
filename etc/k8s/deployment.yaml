@@ -33,7 +33,7 @@ spec:
         kubernetes.io/hostname: zeus
       containers:
         - name: is-gesture-recognizer
-          image: luizcarloscf/is-gesture-recognizer:0.0.3
+          image: luizcarloscf/is-gesture-recognizer:0.0.4
           #command: ["sleep"]
           #args: ["30000000"]
           command: ["python3"]

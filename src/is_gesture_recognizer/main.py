@@ -5,10 +5,11 @@ import dateutil.parser as dp
 from skeleton import Skeleton
 from utils import load_options
 from gesture import GestureRecognizer
+from service_channel import ServiceChannel
 from is_msgs.image_pb2 import ObjectAnnotations
 from prometheus_client import start_http_server, Gauge
 from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
-from is_wire.core import Subscription, Message, Channel, Logger, Tracer, AsyncTransport
+from is_wire.core import Subscription, Message, Logger, Tracer, AsyncTransport
 
 
 def span_duration_ms(span):
@@ -42,7 +43,7 @@ def main():
     op = load_options()
 
     # Conecting to the broker
-    channel = Channel(op.broker_uri)
+    channel = ServiceChannel(op.broker_uri)
     log.info('Connected to broker {}', op.broker_uri)
 
     # creating the Zipking exporter
@@ -79,7 +80,7 @@ def main():
     while True:
 
         # waiting for receive a message
-        msg = channel.consume()
+        msg, dropped = channel.consume(return_dropped=True)
 
         # initialize the Tracer
         tracer = Tracer(exporter, span_context=msg.extract_tracing())
@@ -155,6 +156,7 @@ def main():
 
             # logging usefull informations
             info = {
+                'dropped': dropped,
                 'prediction': pred,
                 'probability': prob,
                 'uncertainty': uncertainty,
