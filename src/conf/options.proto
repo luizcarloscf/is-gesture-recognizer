@@ -1,14 +1,24 @@
 syntax = "proto3";
 
-
-// All options
 message GestureRecognizierOptions {
     // Uri of the broker
     string broker_uri = 1;
+    // Uri of the Zipkin
     string zipkin_uri = 2;
+    // Region of cameras
     repeated uint32 group_ids = 3;
-    double period = 4;
-    double region = 5;
-    uint32 count_gesture = 6;
+    // Number of gestures performed
+    uint32 count_gesture = 4;
+    // Skeletons to be selected
+    SkeletonsOptions skeletons = 5;
 
+}
+
+message SkeletonsOptions {
+    // mininal amount of keypoints in the region
+    uint32 min_keypoints = 1;
+    // defining x axis region
+    repeated double x_range = 2;
+    // defining y axis region
+    repeated double y_range = 3;
 }
