@@ -10,11 +10,14 @@ data:
       "broker_uri": "amqp://rabbitmq.default",
       "zipkin_uri": "http://zipkin.default:9411",
       "group_ids": [
-        0
+          0
       ],
-      "period": 5,
-      "region": 1,
-      "count_gesture": 5
+      "count_gesture": 5,
+      "skeletons": {
+          "min_keypoints": 8,
+          "x_range": [-1, 1],
+          "y_range": [-1, 1]
+      }
     }
 
 ---
