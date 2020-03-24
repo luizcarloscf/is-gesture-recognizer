@@ -7,6 +7,7 @@ PWD := ${CURDIR}
 .PHONY: help, clean, login, build, push, proto
 
 help:
+	@ echo "-------------------------------------------------------------------------------"
 	@ echo "Usage:\n"
 	@ echo "make clean-pyc     		Remove python files artifacts."
 	@ echo "make clean-docker  		Clean all stopped containers and build cache."
@@ -15,7 +16,6 @@ help:
 	@ echo "make build         		Build docker image."
 	@ echo "make push          		Push docker image to dockerhub."
 	@ echo "make login	       		Login on docker (necessary to push image)."
-	@ echo "make lint          		Check style with flake8."
 
 clean-pyc:
 	@ find . -name '*.pyc' -exec rm -f {} +
@@ -24,23 +24,29 @@ clean-pyc:
 	@ find . -name '__pycache__' -exec rm -fr {} +
 
 clean-docker:
+	@ echo "-------------------------------------------------------------------------------"
 	@ docker system prune
 
 clean: clean-pyc clean-docker
 
 build-dev:
+	@ echo "-------------------------------------------------------------------------------"
 	docker build -f etc/docker/Dockerfile.dev -t $(IMAGE)/dev .
 
 build:
+	@ echo "-------------------------------------------------------------------------------"
 	docker build -f etc/docker/Dockerfile -t $(USER)/$(IMAGE):$(VERSION) .
 
 push:
+	@ echo "-------------------------------------------------------------------------------"
 	docker push $(USER)/$(IMAGE):$(VERSION)
 
 login:
+	@ echo "-------------------------------------------------------------------------------"
 	docker login
 
 proto:
+	@ echo "-------------------------------------------------------------------------------"
 	@ find . -name 'options_pb2.py' -exec rm -fr {} +
 	@ docker run --rm -v $(PWD):$(PWD) -w $(PWD) luizcarloscf/docker-protobuf:master \
 												--python_out=./src/is_gesture_recognizer \
