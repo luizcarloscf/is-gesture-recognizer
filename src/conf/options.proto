@@ -7,8 +7,8 @@ message GestureRecognizierOptions {
     string zipkin_uri = 2;
     // Region of cameras
     repeated uint32 group_ids = 3;
-    // Number of gestures performed
-    uint32 count_gesture = 4;
+    // execution time in seconds
+    double exec_time = 4;
     // Skeletons to be selected
     SkeletonsOptions skeletons = 5;
 

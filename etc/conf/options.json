@@ -4,7 +4,7 @@
     "group_ids": [
         0
     ],
-    "count_gesture": 5,
+    "exec_time": 0.0,
     "skeletons": {
         "min_keypoints": 8,
         "x_range": [-1, 1],

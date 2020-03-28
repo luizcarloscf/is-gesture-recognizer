@@ -1,4 +1,4 @@
-VERSION := 0.0.5
+VERSION := 0.0.6
 USER := luizcarloscf
 IMAGE := is-gesture-recognizer
 PYTHON := python3
@@ -51,4 +51,4 @@ proto:
 	@ docker run --rm -v $(PWD):$(PWD) -w $(PWD) luizcarloscf/docker-protobuf:master \
 												--python_out=./src/is_gesture_recognizer \
 												-I./src/conf/ options.proto
-	@ echo "src/is-gesture/ptions_pb2.py file successfully written"
+	@ echo "src/is-gesture/options_pb2.py file successfully written"

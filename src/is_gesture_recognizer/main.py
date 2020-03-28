@@ -1,4 +1,5 @@
 import re
+import time
 import dateutil.parser as dp
 
 from skeleton import Skeleton
@@ -123,7 +124,8 @@ def main():
 
     buffer = list()
     predict_flag = False
-    count_gesture = 0
+
+    mean = lambda x, dt: (sum(x) / len(x)) / dt
 
     while True:
 
@@ -150,6 +152,7 @@ def main():
             pass
 
         elif pred != 0 and predict_flag is False:
+            initial_time = time.time()
             predict_flag = True
             buffer.append(uncertainty)
 
@@ -157,12 +160,13 @@ def main():
             buffer.append(uncertainty)
 
         elif pred == 0 and predict_flag is True:
-            count_gesture += 1
             predict_flag = False
-            if count_gesture >= op.count_gesture:
-                unc.set(sum(buffer) / len(buffer))
-                buffer = []
-                count_gesture = 0
+            exec_time = time.time() - initial_time
+            if exec_time >= op.exec_time:
+                unc.set(mean(buffer, exec_time))
+                log.info ("execution_ms: {}, buffer_mean: {}", (exec_time*1000), mean(buffer, exec_time))
+            buffer = []
+            
         
         tracer.end_span()
 

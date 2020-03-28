@@ -12,7 +12,7 @@ data:
       "group_ids": [
           0
       ],
-      "count_gesture": 5,
+      "exec_time": 0.0,
       "skeletons": {
           "min_keypoints": 8,
           "x_range": [-1, 1],
@@ -36,9 +36,7 @@ spec:
         kubernetes.io/hostname: zeus
       containers:
         - name: is-gesture-recognizer
-          image: luizcarloscf/is-gesture-recognizer:0.0.5
-          #command: ["sleep"]
-          #args: ["30000000"]
+          image: luizcarloscf/is-gesture-recognizer:0.0.6
           command: ["python3"]
           args: ["src/is_gesture_recognizer/main.py", "/conf/options.json"]
           imagePullPolicy: Always
