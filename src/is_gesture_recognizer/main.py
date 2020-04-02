@@ -125,7 +125,7 @@ def main():
     buffer = list()
     predict_flag = False
 
-    mean = lambda x, dt: (sum(x) / len(x)) / dt
+    mean = lambda x: (sum(x) / len(x))
 
     while True:
 
@@ -163,8 +163,8 @@ def main():
             predict_flag = False
             exec_time = time.time() - initial_time
             if exec_time >= op.exec_time:
-                unc.set(mean(buffer, exec_time))
-                log.info ("execution_ms: {}, buffer_mean: {}", (exec_time*1000), mean(buffer, exec_time))
+                unc.set(mean(buffer))
+                log.info ("execution_ms: {}, buffer_mean: {}", (exec_time*1000), mean(buffer))
             buffer = []
             
         

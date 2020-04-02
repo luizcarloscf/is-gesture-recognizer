@@ -36,7 +36,7 @@ spec:
         kubernetes.io/hostname: zeus
       containers:
         - name: is-gesture-recognizer
-          image: luizcarloscf/is-gesture-recognizer:0.0.6
+          image: luizcarloscf/is-gesture-recognizer:0.0.7
           command: ["python3"]
           args: ["src/is_gesture_recognizer/main.py", "/conf/options.json"]
           imagePullPolicy: Always
