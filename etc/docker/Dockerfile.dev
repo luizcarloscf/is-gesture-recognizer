@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.15.0-gpu-py3
+FROM tensorflow/tensorflow:2.0.1-gpu-py3
 
 RUN pip uninstall -y jupyter ipykernel                               \
     && rm -rf /notebooks                                                \ 

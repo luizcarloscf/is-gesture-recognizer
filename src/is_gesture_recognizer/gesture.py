@@ -3,6 +3,7 @@ import csv
 import sys
 import os
 import argparse
+import time
 import math
 import glob
 import pickle
@@ -172,7 +173,9 @@ class GestureRecognizer(nn.Module):
             mean = probs.mean(0)
             pred = np.argmax(mean) + 1
             prob = mean.max()
-        return pred, prob, uncertainty
+        if prob == 0:
+            uncertainty = 0.0
+        return pred, prob, uncertainty, time.time()
 
 
 if __name__ == "__main__":

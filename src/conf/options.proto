@@ -22,3 +22,10 @@ message SkeletonsOptions {
     // defining y axis region
     repeated double y_range = 3;
 }
+
+message GestureInfo {
+    uint32 prediction = 1;
+    double probability = 2;
+    double uncertainty = 3;
+    double created_at = 4;
+}

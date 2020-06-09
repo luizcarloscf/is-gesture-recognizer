@@ -4,11 +4,12 @@ import dateutil.parser as dp
 
 from skeleton import Skeleton
 from utils import load_options
+from options_pb2 import GestureInfo
 from gesture import GestureRecognizer
 from is_msgs.image_pb2 import ObjectAnnotations
 from prometheus_client import start_http_server, Gauge
 from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
-from is_wire.core import Subscription, Channel, Logger, Tracer, AsyncTransport
+from is_wire.core import Subscription, Channel, Logger, Tracer, AsyncTransport, Message
 
 
 def span_duration_ms(span):
@@ -146,7 +147,7 @@ def main():
 
         skl = Skeleton(skeleton)
         skl_normalized = skl.normalize()
-        pred, prob, uncertainty = model.predict(skl_normalized)
+        pred, prob, uncertainty, timestamp = model.predict(skl_normalized)
             
         if pred == 0 and predict_flag is False:
             pass
@@ -166,7 +167,14 @@ def main():
                 unc.set(mean(buffer))
                 log.info ("execution_ms: {}, buffer_mean: {}", (exec_time*1000), mean(buffer))
             buffer = []
-            
+
+        info_pb = GestureInfo()
+        info_pb.prediction = int(pred)
+        info_pb.probability = float(prob)
+        info_pb.uncertainty = float(uncertainty)
+        info_pb.created_at = float(timestamp)
+        msg = Message(content=info_pb)
+        channel.publish(msg, topic='InfoKeeper.GestureRecognition.Save')
         
         tracer.end_span()
 
