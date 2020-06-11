@@ -160,7 +160,7 @@ class GestureRecognizer(nn.Module):
 
         if not self.movement:
             self.hidden_state = None
-            return 0, spp_prob, spp_unc
+            return 0, spp_prob, spp_unc, time.time()
 
         data = self._data_transformation(skeleton, mc_samples)
         with torch.no_grad():
@@ -175,6 +175,7 @@ class GestureRecognizer(nn.Module):
             prob = mean.max()
         if prob == 0:
             uncertainty = 0.0
+
         return pred, prob, uncertainty, time.time()
 
 
